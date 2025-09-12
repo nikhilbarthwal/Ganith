@@ -34,8 +34,7 @@ type Matrix<'T when 'T :> IEquatable<'T>
 
     static member inline (*) (m1: Matrix<'V>, m2: Matrix<'V>): Matrix<'V> =
         assert (m2.Rows = m1.Columns)
-        let gen i j = Vector<'V>.Convolve m2.Rows (m1.Row i) (m2.Column j)
-        Matrix(m1.Rows, m2.Columns, gen)
+        let gen i j = m1[i].Convolve(m2.Column j) in Matrix(m1.Rows, m2.Columns, gen)
 
     static member Transpose(m: Matrix<'T>) = Matrix(m.Columns, m.Rows, m.Column)
 

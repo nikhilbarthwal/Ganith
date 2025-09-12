@@ -20,7 +20,7 @@ module Matrix =
 
     let private fractions (rows: int) (columns: int) (max: int): Matrix<Fraction> =
         let gen (_: int) = Utils.Random columns (1, max)
-        let n, d = Vector(rows, gen) , Vector(rows, gen)
+        let n, d = Utils.Array(rows, gen) , Utils.Array(rows, gen)
         Matrix(rows, columns, fun i j -> Fraction(n[i][j], d[i][j]))
 
     let private shuffleTest (tag: string) (count: int) (length: int): bool =
