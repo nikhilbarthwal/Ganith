@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <PublishSingleFile>true</PublishSingleFile>
+        <UseAppHost>true</UseAppHost>
+        <AssemblyName>Ganith</AssemblyName>
+        <RootNamespace>Ganith</RootNamespace>
+        <LangVersion>8.0</LangVersion>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Library.fs"/>
+        <Compile Include="Numbers.fs"/>
+        <Compile Include="Vector.fs"/>
+        <Compile Include="Matrix.fs"/>
+    </ItemGroup>
+
+</Project>
