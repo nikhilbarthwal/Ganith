@@ -20,14 +20,15 @@ ifeq ($(shell uname -o), Cygwin)
 	out=.exe
 endif
 
+
+test:
+	dotnet test Ganith.Tests/Ganith.Tests.fsproj
+
 print.ps: ${sources}
 	a2ps -o $@ --font-size=10 -R --columns=1 $^
 
 print.pdf: print.ps
 	ps2pdf -o $@ $^
-
-test:
-	dotnet test Ganith.Tests/Ganith.Tests.fsproj
 
 clean:
 	rm -rf */bin */obj *.bin *.exe *.log print.pdf print.ps

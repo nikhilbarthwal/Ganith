@@ -10,7 +10,7 @@ type Matrix<'T when 'T :> IEquatable<'T>
         (rows: int, columns: int, gen: int -> int -> 'T) =
 
     let data =
-        let row i = Vector(columns, gen i) in Vector(rows, row)
+        let row i = Vector(columns, gen i) in Utils.Array(rows, row)
 
     member this.Item with get k = data[k]
     member this.Row i j = data[i][j]
