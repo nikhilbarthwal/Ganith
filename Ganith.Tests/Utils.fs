@@ -1,7 +1,13 @@
 namespace Ganith.Tests
 
+open Ganith
 open System.Diagnostics
 
+
+module Utils =
+    let internal Random (length: int) (min: int, max: int): Vector<int> =
+        let random = System.Random(System.Guid.NewGuid().GetHashCode())
+        Vector(length, fun _ ->  random.Next(min, max))
 
 module Log =
 

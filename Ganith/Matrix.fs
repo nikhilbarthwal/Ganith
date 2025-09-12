@@ -10,7 +10,7 @@ type Matrix<'T when 'T :> IEquatable<'T>
         (rows: int, columns: int, gen: int -> int -> 'T) =
 
     let data =
-        let row i = Vector(columns, gen i) in Array.Buffer(rows, row)
+        let row i = Vector(columns, gen i) in Vector(rows, row)
 
     member this.Item with get k = data[k]
     member this.Row i j = data[i][j]
@@ -18,8 +18,8 @@ type Matrix<'T when 'T :> IEquatable<'T>
     member this.Rows = rows
     member this.Columns = columns
 
-    member this.Multiply(output: Array.Buffer<'T>, input: Array<'T>): unit =
-        let f i = this[i] * input in output.Overwrite(f)
+    //member this.Multiply(output: Array.Buffer<'T>, input: Array<'T>): unit =
+    //    let f i = this[i] * input in output.Overwrite(f)
 
     member this.Transform(f: 'T -> 'V): Matrix<'V> =
         Matrix(rows, columns, fun i j -> (f <| data[i][j]))
@@ -57,18 +57,17 @@ type Matrix<'T when 'T :> IEquatable<'T>
 
 module Matrix =
 
-    type private Array<'T> = Array.Buffer<'T>
-
     let Vandermonde<'T when 'T :> System.Numerics.IMultiplicativeIdentity<'T, 'T>
                         and 'T :> Numerics.IAdditionOperators<'T, 'T, 'T>
                         and 'T :> Numerics.ISubtractionOperators<'T, 'T, 'T>
                         and 'T :> Numerics.IMultiplyOperators<'T, 'T, 'T>
                         and 'T :> IEquatable<'T>>
             (order: int, input: Vector<'T>): Matrix<'T> =
-        let ones() = Array<'T>(input.Length, fun _ -> 'T.MultiplicativeIdentity)
+        let ones() = [| for _ in 1 .. input.Length -> 'T.MultiplicativeIdentity |]
         let output = [| for _ in 0 .. order -> ones() |]
-        let element row k = output[row - 1][k] * input[k]
-        for row in 1 .. order do output[row].Overwrite(element row)
+        for row in 1 .. order do
+            for column in 0 .. input.Length - 1 do
+                output[row][column] <- output[row - 1][column] * input[column]
         Matrix(order + 1, input.Length, fun i j -> output[i][j])
 
 
@@ -80,10 +79,14 @@ module Matrix =
            and 'T :> Numerics.ISubtractionOperators<'T, 'T, 'T>
            and 'T :> Numerics.IMultiplyOperators<'T, 'T, 'T>
            and 'T :> Numerics.IDivisionOperators<'T, 'T, 'T>
-       > (input: Array<Array<'T>>, output: Array<Array<'T>>) =
+       > (input: 'T[][], output: 'T[][]) =
 
+        do assert (input.Length = output.Length)
         let isZero (i, j) =
             let z = input[i][j] in z.Equals('T.AdditiveIdentity)
+
+        let overwrite (v: 'T[]) (f: int -> 'T) =
+            for i in 0 .. v.Length - 1 do v[i] <- f i
 
         member this.Size = input.Length - 1
         member this.Output(k) = Matrix(k, k, fun i j -> output[i][j] / input[i][i])
@@ -91,9 +94,9 @@ module Matrix =
         member this.Eliminate(i, j) =
             if (i <> j) && (not <| isZero(j, i)) then
                 let factor = input[j][i] / input[i][i]
-                let update (m: Array<Array<'T>>) k = m[j][k] - factor * m[i][k]
-                input[j].Overwrite(update input)
-                output[j].Overwrite(update output)
+                let update (m: 'T[][]) k = m[j][k] - factor * m[i][k]
+                overwrite input[j] <| update input
+                overwrite output[j] <| update output
                 assert isZero(j, i)
 
     let Invert<'T when 'T :> IEquatable<'T>
@@ -108,17 +111,19 @@ module Matrix =
             let zero = 'T.AdditiveIdentity
             let one = 'T.MultiplicativeIdentity
             let identity (i: int) (j: int) = if i = j then one else zero
-            let inputRow row = Array<'T>(m.Columns, fun j -> m[row][j])
-            let input = Array<Array<'T>>(m.Rows, inputRow)
-            let outputRow row = Array<'T>(m.Columns, identity row)
-            let output = Array<Array<'T>>(m.Rows, outputRow)
+            let input = [| for i in 1 .. m.Rows -> [|
+                           for j in 1 .. m.Columns -> m[i - 1][j - 1] |] |]
+            let output = [| for i in 1 .. m.Rows -> [|
+                            for j in 1 .. m.Columns -> identity i j |] |]
             let notZero j i = let x: 'T = input[i][j] in not <| x.Equals(zero)
+            let swap i j (m: 'T[][]) =
+                let temp = m[i] in (m[i] <- m[j] ; m[j] <- temp)
 
             let shuffle k: bool =
                 if (notZero k k) then true else
                     let p = Loop.Search (notZero k) (k+1) m.Rows
                     if p = m.Rows then false else
-                        input.Swap(k, p) ; output.Swap(k, p)
+                        (swap k p <| input) ; (swap k p <| output)
                         assert (notZero k k) ; true
 
             if Loop.Verify shuffle 0 (m.Rows - 1) then

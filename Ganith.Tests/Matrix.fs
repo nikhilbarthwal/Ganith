@@ -19,8 +19,8 @@ module Matrix =
         else false
 
     let private fractions (rows: int) (columns: int) (max: int): Matrix<Fraction> =
-        let gen (_: int) = Array.Random columns (1, max)
-        let n, d = Array.Buffer(rows, gen) , Array.Buffer(rows, gen)
+        let gen (_: int) = Utils.Random columns (1, max)
+        let n, d = Vector(rows, gen) , Vector(rows, gen)
         Matrix(rows, columns, fun i j -> Fraction(n[i][j], d[i][j]))
 
     let private shuffleTest (tag: string) (count: int) (length: int): bool =
@@ -62,19 +62,19 @@ module Matrix =
 
     [<Test>]
     let Shuffle() = let tag = "Matrix Shuffle Test"
-                    let tests = Array.Random count (10, 50)
+                    let tests = Utils.Random count (10, 50)
                     let check k = shuffleTest tag k tests[k]
                     Assert.True(Loop.Verify check 0 count)
 
     [<Test>]
     let Inverse() = let tag = "Matrix Inverse Test"
-                    let tests = Array.Random count (10, 20)
+                    let tests = Utils.Random count (10, 20)
                     let check k = inverseTest tag k <| tests[k]
                     Assert.True(Loop.Verify check 0 count)
 
     [<Test>]
     let rec Vandermonde() = let tag = "Matrix Vandermonde Test"
-                            let length = Array.Random count (10, 200)
-                            let power = Array.Random count (2, 10)
+                            let length = Utils.Random count (10, 200)
+                            let power = Utils.Random count (2, 10)
                             let check k = vanderTest tag k length[k] power[k]
                             Assert.True(Loop.Verify check 0 count)
