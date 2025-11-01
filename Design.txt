@@ -1,0 +1,77 @@
+abstract class Vector<T> =
+
+    virtual []: int -> T with get
+    Size: int
+
+    static *
+    static .*
+    static -
+    static +
+
+    protected abstract add: Matrix<T> -> Matrix<T>
+    protected abstract sub: Matrix<T> -> Matrix<T>
+    protected abstract multiply: Matrix<T> -> Matrix<T>
+    protected abstract sparse: bool
+    protected abstract exist: int -> bool
+    protected abstract set: int -> T
+
+Module Vector =
+
+    abstract class Vector.Buffer<T> =
+        virtual []: int -> T with get & set
+        void Overwrite(Vector<T>)
+______________________________________________________________
+
+type internal DenseVector<T>: Vector.Buffer<T>
+type internal SparseVector<T>: Vector.Buffer<T>
+______________________________________________________________
+
+abstract class Matrix<T> =
+    Rows: int
+    Columns: int
+    Row: int -> T
+    Column: int -> T
+
+    protected add: Matrix<T> -> Matrix<T>
+    protected sub: Matrix<T> -> Matrix<T>
+    protected multiply: Matrix<T> -> Matrix<T>
+    protected sparse: bool
+    protected exist: int * int -> bool
+    protected []: int -> Vector.Buffer
+    protected indexes: Set[int]
+    protected swap(i, j)
+
+    Invert: unit -> Matrix<T>
+    Transpose: unit -> Matrix<T>
+    virtual []: int * int -> T with public get
+
+    static *
+    static -
+    static +
+
+Module Matrix =
+
+    abstract class Matrix.Buffer<T> =
+        virtual []: int * int -> T with get & set
+        void Overwrite(int, Vector<T>)
+______________________________________________________________
+
+type internal DenseMatrixr<T>: Matrix.Buffer<T>
+type internal SparseMatrix<T>: Matrix.Buffer<T>
+______________________________________________________________
+
+module Vector =
+    fun Dense(int, int -> T) -> Vector<T>
+    fun Sparse(int, unit -> T) -> Vector<T>
+
+    Module VectorBuffer =
+        fun Dense(int, int -> T) -> Matrix.Buffer<T>
+        fun Sparse(int, unit -> T) -> Matrix.Buffer<T>
+
+module Matrix =
+    fun Dense(int, int, int * int -> T) -> Matrix<T>
+    fun Sparse(int, unit -> T) -> Matrix<T>
+
+    Module Matrix.Buffer =
+        fun Dense(int, int, int * int -> T) -> Matrix.Buffer<T>
+        fun Sparse(int, unit -> T) -> Matrix.Buffer<T>
