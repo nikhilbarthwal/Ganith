@@ -27,7 +27,7 @@ Module Vector =
     module Dense =
         fun Buffer(lenght: int, gen: int -> T): Vector<T>
 
-______________________________________________________________
+____________________________________________________________________________________
 
 interface Matrix<T> =
     Sparse: bool
@@ -75,3 +75,28 @@ module Matrix =
             public fun Identity(length): Matrix.Buffer<T>
         public fun Identity(length): Matrix<T>
         public fun Buffer(length: int, gen: (int * int) -> T): Matrix.Buffer<T>
+
+____________________________________________________________________________________
+
+let rec CrawlUnion (b1: Enumerator) (b2: Enumerator) Action =
+    if (b1 or b2) then
+        if b1.Value > b2.Value then
+            Action b1.Value b2.Value
+            CrawlUnion b1 (b2.MoveNext())
+        else if b1.Value < b2.Value then
+            Action b1.Value b2.Value
+            CrawlUnion (b1.MoveNext()) b2
+        else
+            assert (b1.Value == b2.Value)
+            CrawlUnion (b1.MoveNext()) (b2.MoveNext())
+
+let rec CrawlInteraction (b1: Enumerator) (b2: Enumerator) Action =
+    if (b1 and b2) then
+        if b1.Value > b2.Value then
+            CrawlInteraction b1 (b2.MoveNext())
+        else if b1.Value < b2.Value then
+            CrawlInteraction (b1.MoveNext()) b2
+        else
+            assert (b1.Value == b2.Value)
+            Action b1.Value
+            CrawlInteraction (b1.MoveNext()) (b2.MoveNext())
