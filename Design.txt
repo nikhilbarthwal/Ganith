@@ -1,8 +1,9 @@
 interface Vector<T> =
-    Spart: bool
+    internal Sparse: bool
+    internal Index: ISortedSet<T>
     virtual []: int -> T with get
     Size: int
-    Exist: int -> bool
+    // Exists: int -> bool
     static *
     static .*
     static -
@@ -14,30 +15,33 @@ Module Vector =
         virtual []: int -> T with get & set
         void Overwrite(Vector<T>)
 
-    private fun Dot (v1: Vector.Buffer<T>) (v2: Vector.Buffer<T>) -> T
-    private fun Op (v1: Vector.Buffer<T>) (v2: Vector.Buffer<T>)
+    private fun Dot (v1: Vector<T>) (v2: Vector<T>) -> T
+    private fun Op (v1: Vector<T>) (v2: Vector<T>)
                    (f: T * T -> T) : Vector.Buffer<T>
 
     private DenseBuffer<T>(length): Vector.Buffer<T>
     private SparseBuffer<T>(length): Vector.Buffer<T>
 
-    fun Sparse(length: int, gen: unit -> T): Vector<T>
+    module Sparse =
+        fun Buffer(length: int): Vector.Buffer<T>
+
     fun Dense(length: int, gen: int -> T): Vector<T>
 
     module Dense =
-        fun Buffer(lenght: int, gen: int -> T): Vector<T>
+        fun Buffer(lenght: int, gen: int -> T): Vector.Buffer<T>
 
 ____________________________________________________________________________________
 
 interface Matrix<T> =
-    Sparse: bool
+    internal Sparse: bool
+    internal Index: ISortedSet<T>
     Rows: int
     Columns: int
     Row: int -> T
     Column: int -> T
     Invert: unit -> Matrix<T>
     Transpose: unit -> Matrix<T>
-    Exist: int * int -> bool
+    // Exists: int * int -> bool
     virtual []: int * int -> T with public get
     static *
     static -
@@ -49,26 +53,33 @@ module Matrix =
         virtual []: int * int -> T with public get and set
         void Overwrite(Matrix<T>)
 
-    private fun Mult (m1: Matrix.Buffer<T>) (m2: Matrix.Buffer<T>)
-    private fun Op (m1: Matrix.Buffer<T>) (m2: Matrix.Buffer<T>)
+    private fun Mult (m1: Matrix<T>) (m2: Matrix<T>)
+    private fun Op (m1: Matrix<T>) (m2: Matrix<T>)
                    (f: T * T -> T): Matrix.Buffer<T>
 
     private DenseBuffer<T>(rows, columns): Matrix.Buffer<T>
+        internal Rows: int
+        internal Columns: int
         internal Get(int, int) -> T
         internal Transport: unit -> Matrix.Buffer<T>
         internal Invert: unit -> Matrix.Buffer<T>
+        operator[]: int -> Vector.Buffer<T> with get , set
 
-    private SparseBuffer<T>((rows, columns): Matrix.Buffer<T>
+    private SparseBuffer<T>(rows, columns): Matrix.Buffer<T>
+        internal Rows: int
+        internal Columns: int
         internal Get(int, int) -> T
         internal Transport: unit -> Matrix.Buffer<T>
         internal Invert: unit -> Matrix.Buffer<T>
+        operator[]: int -> Vector.Buffer<T> with get , set
 
-    public fun Sparse(length: int, gen: unit -> T): Matrix.Buffer<T>
+    public fun Sparse(length: int): Matrix.Buffer<T>
 
     module Sparse =
-            public fun Identity(length): Matrix.Buffer<T>
+        public fun Identity(length): Matrix.Buffer<T>
+        publin fun Buffer(rows, columns): Matrix.Buffer<T>
 
-    public fun Dense(lenght: int, gen: (int * int) -> T): Matrix<T>
+    public fun Dense(length: int, gen: (int * int) -> T): Matrix<T>
 
     module Dense =
         module Buffer =
