@@ -2,6 +2,7 @@ interface Vector<T> =
     Spart: bool
     virtual []: int -> T with get
     Size: int
+    Exist: int -> bool
     static *
     static .*
     static -
@@ -36,6 +37,7 @@ interface Matrix<T> =
     Column: int -> T
     Invert: unit -> Matrix<T>
     Transpose: unit -> Matrix<T>
+    Exist: int * int -> bool
     virtual []: int * int -> T with public get
     static *
     static -
