@@ -90,3 +90,58 @@ let rec CrawlInteraction (b1: Enumerator) (b2: Enumerator) Action =
             assert (b1.Value == b2.Value)
             Action b1.Value
             CrawlInteraction (b1.MoveNext()) (b2.MoveNext())
+____________________________________________________________________________________
+
+M.Get(i, j) -> O(log N)
+M.Set(i, j) -> O(log N)
+
+class ArrayOfMap:
+    Get: O(log K)
+    Set: O(log K)
+
+fun Swap(i, j, Row: ArrayOfMap, Column: ArrayOfMap, Result): unit = // O(K . log K)
+    for j in Row[i]:
+        c = Row.Get(i, j)
+        Row.Set( i, j, Row.Get(i, k)) // O(log k)
+        Row.Set( i, k, c) // O(log k)
+
+fun ColumnMax(i): int = // O(K)
+
+fun Invert(M) =
+    let Row = ArrayOfMap(N)
+    let Column = ArrayOfMap(N)
+    let Result = ArrayOfMap(N)
+
+    for i in 1 .. N do
+        Result(i, i) = 1
+
+    for i in 1 .. N do // O(N . K . log K)
+        def V = M.Row[i] // O(log N)
+        def Keys = V.KeySet(i)
+
+        for j in V do O(K . log K)
+            c = V.Key[j]
+            Row[i].Add(c, V.Value[j])  // O(log K)
+            Column[i].Add(c, V.Value[j])  // O(log K)
+
+    for i in 1 .. N do // O(N . K . K)
+
+        if Row.Get(i, i) = 0 then
+            k = ColumnMax(i)
+            if Row.Get(i, k) = 0 then return
+
+            Swap(i, k)
+            Swap(k, i)
+
+        for k in Column[i] do O(K . K)
+            Eliminate(Row, Column, Result, i, k) // O(K)
+
+        assert (Row.Get(i, i) > 0)
+        assert (Column.Get(i, i) > 0)
+
+    for i in 1 .. N do // O(N . K . K)
+        k = Row.Get(i, i)
+        for j in Result.Row(i)
+            Result[i][j] /= k
+
+    return Result
