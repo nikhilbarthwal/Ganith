@@ -1,70 +1,73 @@
-abstract class Vector<T>(size) =
-    protected abstract Sparse: bool
-    protected abstract Index: ISortedSet<T>
-    protected abstract Get: int -> T
-    protected abstract Set: int * T -> unit
-    virtual []: int -> T with get
+module Internal =
+
+    abstract class Vector<T>(size) =
+        abstract Sparse: bool
+        abstact Index: ISortedSet<int>
+        Get: int -> T
+        Size: int
+        abstract Add(Vector<T>) -> Vector<T>
+        abstract Sub(Vector<T>) -> Vector<T>
+        abstract Cross(Vector<T>) -> Vector<T>
+        abstract Dot(Vector<T>r) -> Vector<T>
+
+    abstract class VectorBuffer<T>(size): Vector<T> =
+        public abstract Set: int * T -> unit
+        override Add, Sub, Cross, Dot
+
+    class DenseVector<T>(size): VectorBuffer<T>
+        override Sparse, Index
+
+    class SparseVector<T>(size): VectorBuffer<T>
+        override Sparse, Index
+
+    abstract class Matrix<T>(Rows, Columns) =
+        abstract Sparse: bool
+        abstract Index: ISortedSet<int>
+        Get: int -> Vector<T>
+        Rows: int
+        Columns: int
+        abstract Add: Matrix<T> -> Matrix<T>
+        abstract Sub: Matrix<T> -> Matrix<T>
+        abstract Multiply: Matrix<T> -> Matrix<T>
+        abstract Invert: unit -> Matrix<T>
+        abstract Transpore: unit -> Matrix<T>
+
+    abstract class MatrixBuffer<T>(rows, column): Matrix<T> =
+        public abstract Set: int * int * T -> unit
+        override Add, Sub, Multiply
+
+    class DenseMatrix<T>(rows, column, int * int -> T): MatrixBuffer<T>
+        override Sparse, Index, Transpose, Invert
+
+    class SparseMatrix<T>(rows, column, IEnumerable<int, int, T>): MatrixBuffer<T>
+        override Sparse, Index, Transpose, Invert
+
+
+class Vector<T> private (data: Internal.VectorBuffer<T>)
+    private Data: Internal.Vector<T> = data
+    Get: int -> T
     Size: int
     static *
     static .*
     static -
     static +
+    static Dense
+    static Sparse
 
-and abstract class VectorBuffer(size): Vector<T> =
-    virtual []: int -> T with get & set
-    void Overwrite(Vector<T>)
-
-____________________________________________________________________________________
-
-abstract class Matrix<T>(rows, columns) =
-    protected abstract Sparse: bool
-    protected abstract Index: ISortedSet<T>
-    protected abstract Get: int * int -> T
-    protected abstract Set: int * int * T -> unit
-    protected abstract Update: int * VectorBuffer<T> -> unit
+class Matrix<T> private (data: Internal.MatrixBuffer<T>)
+    private Data: Internal.Matrix<T> = data
     Rows: int
     Columns: int
-    Row: int -> T
-    Column: int -> T
-    public abstract Invert: unit -> Matrix<T>
-    public abstract Transpose: unit -> Matrix<T>
-    public virtual []: int * int -> T with public get
-    protected static Multiply: MatrixBuffer<T>
-    protected static Add, Sub: MatrixBuffer<T>
+    Sparse: bool
+    Row: int -> int -> T
+    Column: int -> int -> T
+    Invert: unit -> Matrix<T>
+    Transpose: unit -> Matrix<T>
     static *
     static -
     static +
-
-and abstract class MatrixBuffer<T>: Matrix<T> =
-    virtual []: int * int -> T with public get and set
-    void Overwrite(Matrix<T>)
-    static *
-    static -
-    static +
-
-____________________________________________________________________________________
-
-module Design =
-
-    private DenseVectorBuffer<T>(rows, columns): VectorBuffer<T>
-    private DenseMatrixBuffer<T>(rows, columns): MatrixBuffer<T>
-    let Vector(size, gen): Vector(T) = DenseVectorBuffer<T>(size, gen)
-    let VectorBuffer(length): VectorBuffer(T) = DenseVectorBuffer<T>(size)
-    let Matrix: Matrix(T) = DenseBuffer<T>(rows, columns, gen)
-    let MatrixBuffer: MatrixBuffer(T) = DenseBuffer<T>(rows, columns)
-    let identity (i, j) =
-    let IdentityBuffer(length) =
-
-module Sparse =
-
-    private DenseVectorBuffer<T>(rows, columns): VectorBuffer<T>
-    private DenseMatrixBuffer<T>(rows, columns): MatrixBuffer<T>
-    let Vector(size, gen): Vector(T) = DenseVectorBuffer<T>(size, gen)
-    let VectorBuffer(length): VectorBuffer(T) = DenseVectorBuffer<T>(size)
-    let Matrix: Matrix(T) = DenseBuffer<T>(rows, columns, gen)
-    let MatrixBuffer: MatrixBuffer(T) = DenseBuffer<T>(rows, columns)
-    let identity (i, j) =
-    let IdentityBuffer(length) =
+    static Dense
+    static Sparse
 
 ____________________________________________________________________________________
 
